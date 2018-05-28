@@ -1,0 +1,27 @@
+#include "pila.h"
+#include "testing.h"
+#include <stddef.h>
+#include <stdio.h>
+
+
+
+
+/* ******************************************************************
+ *                   PRUEBAS UNITARIAS ALUMNO
+ * *****************************************************************/
+
+ void pruebas_pila_alumno(void) {
+    pila_t* pila_vacia = pila_crear();
+    printf("INICIO DE PRUEBAS CON PILA VACIA\n");
+
+    print_test("Ver tope pila vacia",pila_ver_tope(pila_vacia) == NULL );
+    print_test("Esta pila vacia?",pila_esta_vacia(pila_vacia) == true );
+    pila_destruir(pila_vacia);
+}
+
+int main() {
+    /* Ejecuta todas las pruebas. */
+    pruebas_pila_alumno();
+
+    return failure_count() > 0;
+}

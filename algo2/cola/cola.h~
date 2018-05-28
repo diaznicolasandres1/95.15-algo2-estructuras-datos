@@ -1,0 +1,78 @@
+#ifndef COLA_H
+#define COLA_H
+
+#include <stdbool.h>
+
+
+/* ******************************************************************
+ *                DEFINICION DE LOS TIPOS DE DATOS
+ * *****************************************************************/
+
+/* La cola está planteada como una cola de punteros genéricos. */
+
+struct cola;
+typedef struct cola cola_t;
+
+
+/* ******************************************************************
+ *                    PRIMITIVAS DE LA COLA
+ * *****************************************************************/
+
+// Crea una cola.
+// Post: devuelve una nueva cola vacía.
+cola_t* cola_crear(void);
+
+
+void cola_destruir(cola_t *cola, void destruir_dato(void*));
+
+bool cola_esta_vacia(const cola_t *cola);
+
+
+bool cola_encolar(cola_t *cola, void* valor);
+
+
+void* cola_ver_primero(const cola_t *cola);
+
+
+void* cola_desencolar(cola_t *cola);
+
+
+
+
+void pruebas_cola_alumno(void);
+
+void pruebas_cola_vacia(){
+	cola_t* cola = cola_crear();
+	print_test("Se creo una cola vacia",cola_esta_vacia(cola) == true);
+	print_test("Ver primero debe ser NULL", cola_ver_primero(cola) == NULL);
+	print_test("Desencolar es invalido", cola_desencolar(cola) == NULL);
+	cola_destruir(cola,NULL);	
+}
+
+void pruebas_encolar_desencolar(){
+	cola_t* cola = cola_crear();
+	int elementos[] = {1,2,3,4,5};
+	print_test("Se creo cola vacia",cola_esta_vacia(cola) == true);
+	print_test("Encolar primer elemento ",cola_encolar(cola,&elementos[0]) == true);
+	print_test("Ver primer elemento es correcto", cola_ver_primero(cola) == &elementos[0]);
+	print_test("Encolar segundo elemento ",cola_encolar(cola,&elementos[1]) == true);
+	print_test("Ver primer elemento es correcto", cola_ver_primero(cola) == &elementos[0]);
+	print_test("Encolar tercer elemento ",cola_encolar(cola,&elementos[2]) == true);
+	print_test("Encolar cuarto elemento ",cola_encolar(cola,&elementos[3]) == true);
+	print_test("Encolar quinto elemento ",cola_encolar(cola,&elementos[4]) == true);
+	print_test("Ver primer elemento es correcto (elemento 1)", cola_ver_primero(cola) == &elementos[0]);
+	print_test("Desencolar es correcto (elemento 1)", cola_desencolar(cola) == &elementos[0]);
+	print_test("Ver primer elemento es correcto(elemento 2)", cola_ver_primero(cola) == &elementos[1]);
+	print_test("Desencolar es correcto (elemento 2)", cola_desencolar(cola) == &elementos[1]);
+	print_test("Ver primer elemento es correcto(elemento 3)", cola_ver_primero(cola) == &elementos[2]);
+	print_test("Desencolar es correcto (elemento 3)", cola_desencolar(cola) == &elementos[2]);
+	print_test("Ver primer elemento es correcto(elemento 4)", cola_ver_primero(cola) == &elementos[3]);
+	print_test("Desencolar es correcto (elemento 4)", cola_desencolar(cola) == &elementos[3]);
+	print_test("Ver primer elemento es correcto(elemento 5)", cola_ver_primero(cola) == &elementos[4]);
+	print_test("Desencolar es correcto (elemento 4)", cola_desencolar(cola) == &elementos[4]);
+	print_test("La cola esta vacia",cola_esta_vacia(cola) == true);
+
+
+
+}
+#endif // COLA_H

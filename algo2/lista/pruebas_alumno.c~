@@ -1,0 +1,213 @@
+#include "testing.h"
+#include <stddef.h>
+#include <stdio.h>
+#include "lista.h"
+#include "pila.h"
+#define TAM 100
+
+void manejo_lista_vacia(){
+	lista_t* lista = lista_crear();
+	int uno = 1,dos=2;
+	print_test("Se creo lista vacia",lista_esta_vacia(lista) == true);
+	lista_iter_t* iter= lista_iter_crear(lista);
+	print_test("ITER VER ACTUAL VACIO",lista_iter_ver_actual(iter) == NULL);
+    lista_iter_destruir(iter);
+	print_test("Borrar primero vacio",lista_borrar_primero(lista) == NULL);
+	print_test("Ver primero vacio",lista_ver_primero(lista) ==NULL);
+	print_test("Ver primero ultimo vacio",lista_ver_ultimo(lista) ==NULL);
+	print_test("Largo lista vacia",lista_largo(lista) == 0);
+	print_test("Borrar vacio",lista_borrar_primero(lista) == NULL );
+	print_test("Insertar primero ", lista_insertar_primero(lista,&uno) == true);
+	print_test("Insertar ultimo ", lista_insertar_ultimo(lista,&dos) == true);
+	lista_destruir(lista,NULL);
+	print_test("Destruir lista", true);
+}
+void utilizando_lista(){
+	lista_t* lista = lista_crear();	
+	int uno =1,dos=2,tres=3,cuatro=4;
+	print_test("Insertar primero ", lista_insertar_primero(lista,&uno) == true);
+	print_test("Insertar ultimo", lista_insertar_ultimo(lista,&dos) == true);
+	print_test("Insertar ultimo ", lista_insertar_ultimo(lista,&tres) == true);
+	print_test("Insertar ultimo ", lista_insertar_ultimo(lista,&cuatro) == true);
+	print_test("Ver primero ",lista_ver_primero(lista) == &uno);
+	print_test("Ver ultimo ",lista_ver_ultimo(lista) == &cuatro);
+	print_test("Borrar primero", lista_borrar_primero(lista) == &uno);
+	print_test("Ver primero despues de borrar", lista_borrar_primero(lista) == &dos);
+	print_test("Borrar hasta vacio", lista_borrar_primero(lista) == &tres);
+	print_test("Borrar hasta vacio", lista_borrar_primero(lista) == &cuatro);
+	print_test("Largo lista debe ser 0",lista_largo(lista) == 0);
+	print_test("No se puede borrar vacio", lista_borrar_primero(lista) == NULL);
+	print_test("Insertar NULL", lista_insertar_primero(lista,NULL) == true);
+	print_test("Largo lista debe ser 1",lista_largo(lista) == 1);
+	print_test("Ver primero debe devolver dato null",lista_ver_primero(lista) ==NULL);
+	print_test("Borrar NULL", lista_borrar_primero(lista) == NULL);
+	print_test("Largo lista debe ser 0",lista_largo(lista) == 0);
+	lista_destruir(lista,NULL);
+}
+
+void pruebas_de_volumen(){
+	lista_t* lista = lista_crear();
+	int array[TAM];
+	for(int i =0;i<TAM;i++){
+		array[i]=i;
+	}
+	printf("Insertamos primero 100 elementos\n");
+	bool ok = true;
+	for(int i =0;i<TAM;i++){
+		ok&= lista_insertar_ultimo(lista,&array[i]);
+	}
+	print_test("Se insertaron ultimos 100 elementos", ok);
+	for(int i =0;i<TAM;i++){
+		ok&= lista_insertar_primero(lista,&array[i]);
+	}	
+	print_test("Se insertaron primeros 100 elementos", ok);
+	for(int i =0;i<TAM*2;i++){
+		lista_borrar_primero(lista);
+	}
+	print_test("Se borraron todos los elementos", lista_largo(lista) ==0);
+	lista_destruir(lista, NULL);
+}
+
+
+void elemento_destruir_wrapper(void* elem){
+	pila_destruir((pila_t*) elem);
+}
+void pruebas_destruir_wrapper(){	
+	printf("ENCOLANDO PILAS\n");
+	int datos[TAM]={1,2,3,4,5};
+	pila_t* pila1 = pila_crear();
+	pila_t* pila2 = pila_crear();
+	pila_apilar(pila1,&datos[0]);
+	pila_apilar(pila1,&datos[1]);
+	pila_apilar(pila2,&datos[2]);
+	pila_apilar(pila2,&datos[3]);
+	lista_t* lista = lista_crear();
+	print_test("Insertar pila",lista_insertar_ultimo(lista,pila1) == true);
+	print_test("Insertar pila",lista_insertar_ultimo(lista,pila2) == true);
+	print_test("Insertar pila",lista_insertar_ultimo(lista,pila1) == true);	
+	print_test("Ver primera pila encolada",lista_ver_primero(lista) == pila1);
+	print_test("Desencolar pila", lista_borrar_primero(lista) == pila1);
+	lista_destruir(lista,elemento_destruir_wrapper);
+	print_test("Se destruyo lista con wrapper", true);
+}
+
+
+bool visitar(void* dato, void* extra){
+	
+    printf("%d-", *(int*) dato + *(int*) extra);
+    return true;
+}
+bool visitar_wrapper(void* dato, void* extra){
+
+	 return visitar( dato,extra);
+}
+
+void pruebas_iterador_interno(){
+	int suma = 1;	lista_t* lista = lista_crear();	
+	int cero=0;
+	int uno =1,dos=2,tres=3,cuatro=4;
+	lista_insertar_primero(lista,&uno);
+	lista_insertar_ultimo(lista,&dos);
+	lista_insertar_ultimo(lista,&tres);
+	lista_insertar_ultimo(lista,&cuatro);
+	printf("Debe imprimir 2-3-4-5 Resultado : ");	
+	lista_iterar(lista,visitar_wrapper,&suma);
+	print_test("\nIterador funciona correctamente", true);	
+	printf("Debe imprimir 1-2-3-4 Resultado : ");	
+	lista_iterar(lista,visitar_wrapper,&cero);
+	print_test("\nIterador funciona correctamente", true);
+	lista_destruir(lista,NULL);	
+}
+
+	
+
+
+
+
+
+
+void pruebas_iter_externo(){
+	printf("PRUEBAS ITERADOR EXTERNO\n");
+	lista_t* lista = lista_crear();	
+	int uno =1,dos=2,tres=3,cuatro=4,cinco=5,seis=6;
+	lista_insertar_primero(lista,&uno);
+	lista_insertar_ultimo(lista,&dos);
+	lista_insertar_ultimo(lista,&tres);
+	lista_insertar_ultimo(lista,&cuatro);
+	lista_iter_t* iter =lista_iter_crear(lista);
+	print_test("Insertar al crear", lista_iter_insertar(iter,&cinco) == true);
+	print_test("Se inserto primero", lista_iter_ver_actual(iter) == &cinco);
+	printf("avanzo hasta el final para agregar\n");
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);
+	print_test("Insertar elemento en el medio", lista_iter_insertar(iter,&seis) == true);
+	print_test("Ver actual", lista_iter_ver_actual(iter) == &seis);
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);
+	print_test("Veo actual", lista_iter_ver_actual(iter) == &tres);
+	print_test("Borro en el medio el tres", lista_iter_borrar(iter) == &tres);
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);	
+	print_test("Llego al final", lista_iter_avanzar(iter) == false);
+	print_test("Llego al final", lista_iter_al_final(iter) == true);
+	print_test("Insertar al final", lista_iter_insertar(iter,&seis) == true);
+	print_test("Ver actual al final", lista_iter_ver_actual(iter) == &seis);
+
+	printf("TERMINE DE ITERAR VEO RESULTADOS EN LA LISTA\n");
+	//(quedo con los valores 5-1-6-2-4-6)
+	print_test("Ver final de la lista", lista_ver_ultimo(lista) == &seis);
+	print_test("Ver primero de la lista", lista_ver_primero(lista) == &cinco);
+	print_test("Borro y debe ser el cinco", lista_borrar_primero(lista) == &cinco);
+	print_test("Borro y debe ser el uno", lista_borrar_primero(lista) == &uno);
+	print_test("Borro y debe ser el seis", lista_borrar_primero(lista) == &seis);
+	print_test("Borro y debe ser el dos", lista_borrar_primero(lista) == &dos);
+	print_test("Borro y debe ser el cuatro", lista_borrar_primero(lista) == &cuatro);
+	print_test("Borro y debe ser el seis", lista_borrar_primero(lista) == &seis);
+	lista_iter_destruir(iter);	
+	lista_destruir(lista, NULL);
+
+}
+void otros_casos_iter_ext(){
+	printf("OTROS CASOS ITERADOR EXTERNO\n");
+	lista_t* lista = lista_crear();	
+	
+	int uno =1,dos=2,tres=3,cuatro=4;
+	lista_insertar_ultimo(lista,&uno);
+	lista_insertar_ultimo(lista,&dos);
+	lista_insertar_ultimo(lista,&tres);
+	lista_insertar_ultimo(lista,&cuatro);
+	lista_iter_t* iter =lista_iter_crear(lista);
+	print_test("Borro hasta vacio", lista_iter_borrar(iter) == &uno);
+	print_test("Borro hasta vacio", lista_iter_borrar(iter) == &dos);
+	print_test("Borro hasta vacio", lista_iter_borrar(iter) == &tres);
+	print_test("Borro hasta vacio", lista_iter_borrar(iter) == &cuatro);
+	print_test("Inserto al quedar vacio", lista_iter_insertar(iter,&uno) ==true);
+	print_test("Ver primero", lista_iter_ver_actual(iter) == &uno);
+	print_test("Avanzo", lista_iter_avanzar(iter) == true);
+	print_test("Llego al final", lista_iter_al_final(iter) == true);
+	lista_iter_destruir(iter);	
+	lista_destruir(lista, NULL);
+
+}
+
+lista_iter_t *lista_iter_crear(lista_t *lista); //LISTO
+bool lista_iter_avanzar(lista_iter_t *iter); //creo que esta
+void *lista_iter_ver_actual(const lista_iter_t *iter);//LISTO
+bool lista_iter_al_final(const lista_iter_t *iter);//LISTO
+void lista_iter_destruir(lista_iter_t *iter);//LISTO
+bool lista_iter_insertar(lista_iter_t *iter, void *dato);
+void *lista_iter_borrar(lista_iter_t *iter);
+
+
+
+void pruebas_lista_alumno(){
+	manejo_lista_vacia();
+	utilizando_lista();
+	pruebas_de_volumen();
+	pruebas_destruir_wrapper();
+	printf("PRUEBAS DEL ITERADOR INTERNO\n");
+	pruebas_iterador_interno();
+	pruebas_iter_externo();
+	otros_casos_iter_ext();
+
+
+}
