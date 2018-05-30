@@ -9,9 +9,9 @@
 #include "hashing.h"
 
 
-#define FACTOR_REDIMENSION_SUP 2//Cuanto va a ser el tamanio de la redimension (ej: 2*tamanio del hash)
-#define FACTOR_REDIMENSION_INF 4//Por cuanto vamos a dividir el tamaño del hash
-#define HASH_TAM_TABLA 199
+#define FACTOR_REDIMENSION_SUP  5//Cuanto va a ser el tamanio de la redimension (ej: 2*tamanio del hash)
+#define FACTOR_REDIMENSION_INF 2//Por cuanto vamos a dividir el tamaño del hash
+#define HASH_TAM_TABLA 500
 #define FACTOR_CARGA_INF 1
 #define FACTOR_CARGA_SUP 5 
 /*			Definicion de las estructuras			*/
@@ -149,10 +149,8 @@ size_t hash_cantidad(const hash_t *hash){
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato){ 
 	double fact_carga = (double) hash->cantidad_elem/  (double)hash->tamanio_tabla;
-	if(fact_carga >= FACTOR_CARGA_SUP && fact_carga<1){ 
-		if(!hash_redimensionar(hash,(hash->tamanio_tabla)*FACTOR_REDIMENSION_SUP)){
-			return false;
-		}
+	if(fact_carga >= FACTOR_CARGA_SUP){ 
+		hash_redimensionar(hash,(hash->tamanio_tabla)*FACTOR_REDIMENSION_SUP);		
 	}
 	lista_iter_t* iterador =  hash_obtener_iter(hash,clave);
 	if(!iterador){
