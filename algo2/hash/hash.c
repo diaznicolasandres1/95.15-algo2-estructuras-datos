@@ -30,7 +30,8 @@ typedef struct hash_campo{
 struct hash_iter{
 	const hash_t* hash; 
 	lista_iter_t* lista_iter;    	
-	size_t lista_actual;	
+	size_t lista_actual;
+	
 };
 
 /* FUNCIONES AUXILIARES */
@@ -149,7 +150,7 @@ size_t hash_cantidad(const hash_t *hash){
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato){ 
 	double fact_carga = (double) hash->cantidad_elem/  (double)hash->tamanio_tabla;
-	if(fact_carga >= FACTOR_CARGA_SUP){ 
+	if(fact_carga >= FACTOR_CARGA_SUP && FACTOR_CARGA_SUP > 0){ 
 		hash_redimensionar(hash,(hash->tamanio_tabla)*FACTOR_REDIMENSION_SUP);		
 	}
 	lista_iter_t* iterador =  hash_obtener_iter(hash,clave);
@@ -170,9 +171,8 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato){
 	/*Si es clave nueva*/
 	hash_campo_t* campo=crear_hash_campo(clave,dato);
 	if(!campo)
-		return false;	
-	long unsigned int resultado = (long unsigned int) hashing(clave,hash->tamanio_tabla);
-	lista_insertar_ultimo(hash->listas[resultado],campo);
+		return false;		
+	lista_iter_insertar(iterador,campo);
 	hash->cantidad_elem++;
 	lista_iter_destruir(iterador);
 	return true;
@@ -251,8 +251,8 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
 	while((lista_esta_vacia(hash->listas[i]) ) &&  (i < hash->tamanio_tabla-1)){
 		i++;
 	}
-	hash_iter->hash = hash;
-	hash_iter->lista_actual = i;
+	hash_iter->hash = hash;	
+	hash_iter->lista_actual = i;	
 	hash_iter->lista_iter = lista_iter_crear(hash->listas[i]); 
 	if(!hash_iter->lista_iter){
 		free(hash_iter);
@@ -263,23 +263,19 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
 
 
 bool hash_iter_avanzar(hash_iter_t *iter){	
-	if((!lista_iter_avanzar(iter->lista_iter)) || lista_iter_al_final(iter->lista_iter)){ 
-		while(lista_iter_al_final(iter->lista_iter) ){	
-			iter->lista_actual++;
-			if(iter->lista_actual >= iter->hash->tamanio_tabla){
-				return false;
-			}
-			if(!lista_esta_vacia((iter->hash->listas[iter->lista_actual]))) {
-				lista_iter_t* iterador_auxiliar = iter->lista_iter;					
-				lista_iter_destruir(iterador_auxiliar); 
-				iter->lista_iter = lista_iter_crear(iter->hash->listas[iter->lista_actual]);
-				if(!iter->lista_iter){
-					return false;
-				}
-			}					
-		}		
-	}	
-	return true;
+	if(lista_iter_avanzar(iter->lista_iter) &&  !hash_iter_al_final(iter)){		
+		return true;
+	}
+	iter->lista_actual++;	
+	while(iter->lista_actual < iter->hash->tamanio_tabla){
+		if(!lista_esta_vacia(iter->hash->listas[iter->lista_actual])){								
+			lista_iter_destruir(iter->lista_iter); 
+	             	iter->lista_iter = lista_iter_crear(iter->hash->listas[iter->lista_actual]);	             	
+	             	return true;
+	             }
+	             iter->lista_actual++;	         
+	}
+	return false;	
 }
 
 /*Devuelve clave actual, esa clave no se puede modificar ni liberar*/
@@ -291,22 +287,13 @@ const char *hash_iter_ver_actual(const hash_iter_t *iter){
 	return nodo->clave;
 }
 
+
+
 bool hash_iter_al_final(const hash_iter_t *iter){	
 	if(!lista_iter_al_final(iter->lista_iter)){
 		return false;
 	}
-
-	size_t contador = (iter->lista_actual)+1;
-	if(contador > iter->hash->tamanio_tabla-1){
-		return true;
-	}	
-	while(lista_esta_vacia(iter->hash->listas[contador-1]) && (contador <= iter->hash->tamanio_tabla-1)){
-		contador++;			
-	}
-	if(contador == iter->hash->tamanio_tabla-1){
-		return true;
-	}
-	return false;
+	return true;	
 }
  
 void hash_iter_destruir(hash_iter_t* iter){
