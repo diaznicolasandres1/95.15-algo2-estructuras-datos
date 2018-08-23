@@ -1,4 +1,4 @@
-# AYP2-C-
-Trabajos de algoritmos y programacion 2 FIUBA
+# AYP2-C
 
-TDA's implementados para la materia Algoritmos y programacion II
+
+TDA's implementados para la materia Algoritmos y programacion II en lenguaje C
